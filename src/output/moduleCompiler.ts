@@ -143,10 +143,20 @@ function processModule(store: Store, src: string, filename: string) {
     return id
   }
 
+  // const modulesKey = `__modules__`
+  // const exportKey = `__export__`
+  // const dynamicImportKey = `__dynamic_import__`
+  // const moduleKey = `__module__`
+
+  //例子 __export__(__module__, 'default', () => data)
   function defineExport(name: string, local = name) {
     s.append(`\n${exportKey}(${moduleKey}, "${name}", () => ${local})`)
   }
 
+  //
+  //
+
+  //const __module__ = __modules__["./src/App.vue"] = { [Symbol.toStringTag]: "Module" }
   // 0. instantiate module
   s.prepend(
     `const ${moduleKey} = ${modulesKey}[${JSON.stringify(
@@ -154,6 +164,7 @@ function processModule(store: Store, src: string, filename: string) {
     )}] = { [Symbol.toStringTag]: "Module" }\n\n`,
   )
 
+  //缓存导入对象到idToImportMap，移除导入语句
   // 1. check all import statements and record id -> importName map
   for (const node of ast) {
     // import foo from 'foo' --> foo -> __import_foo__.default
@@ -170,6 +181,7 @@ function processModule(store: Store, src: string, filename: string) {
               `${importId}.${(spec.imported as Identifier).name}`,
             )
           } else if (spec.type === 'ImportDefaultSpecifier') {
+            // foo -> __import_foo__.default
             idToImportMap.set(spec.local.name, `${importId}.default`)
           } else {
             // namespace specifier
@@ -181,6 +193,7 @@ function processModule(store: Store, src: string, filename: string) {
     }
   }
 
+  //导出语句转换为__export__(__module__, 'default', () => data)形式
   // 2. check all export statements and define exports
   for (const node of ast) {
     // named exports
@@ -249,6 +262,7 @@ function processModule(store: Store, src: string, filename: string) {
     }
   }
 
+  //把所有对导入的应用转换为__import_x__.foo形式
   // 3. convert references to import bindings
   for (const node of ast) {
     if (node.type === 'ImportDeclaration') continue
@@ -287,9 +301,12 @@ function processModule(store: Store, src: string, filename: string) {
   let hasDynamicImport = false
   walk(ast, {
     enter(node: Node, parent: Node) {
+      //表单式
       if (node.type === 'Import' && parent.type === 'CallExpression') {
         const arg = parent.arguments[0]
         if (arg.type === 'StringLiteral' && arg.value.startsWith('./')) {
+          //将相对应用转换为
+          // import('./target.ts') ---> __dynamic_import__('src/target.ts')
           hasDynamicImport = true
           s.overwrite(node.start!, node.start! + 6, dynamicImportKey)
           s.overwrite(
