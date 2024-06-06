@@ -251,6 +251,7 @@ async function updatePreview() {
         `import { ${
           isSSR ? `createSSRApp` : `createApp`
         } as _createApp } from "vue"
+        import * as Vue from "vue"
         ${previewOptions?.customCode?.importCode || ''}
         const _mount = () => {
           const AppComponent = __modules__["${mainFile}"].default
@@ -259,9 +260,20 @@ async function updatePreview() {
           if (!app.config.hasOwnProperty('unwrapInjectedRef')) {
             app.config.unwrapInjectedRef = true
           }
+
           app.config.errorHandler = e => console.error(e)
           ${previewOptions?.customCode?.useCode || ''}
+
+          window.Vue = Vue
+
+          import("https://unpkg.com/naive-ui").then(r=> {
+          // console.log(r)
+          // console.log(window.naive)
+          app.use(window.naive)
           app.mount('#app')
+          })
+
+          // 
         }
         if (window.__ssr_promise__) {
           window.__ssr_promise__.then(_mount)
