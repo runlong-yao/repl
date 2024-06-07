@@ -12,7 +12,7 @@ export default defineConfig({
   ],
   optimizeDeps: {
     // avoid late discovered deps
-    include: ['date-fns'],
+    // include: ['date-fns'],
   },
   resolve: {
     alias: {

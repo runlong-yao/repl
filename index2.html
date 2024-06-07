@@ -8,10 +8,13 @@
     <script type="importmap">
       {
         "imports": {
-          "naive": "https://cdn.jsdelivr.net/npm/naive-ui-esm@0.0.3/+esm"
+          "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
+          "naive": "http://127.0.0.1:5500/naive-esm/naive-esm.js"
         }
       }
     </script>
+    <!-- "naive": "https://cdn.jsdelivr.net/npm/naive-ui-esm@0.0.3/+esm" -->
+
     <style>
       body {
         margin: 0;
@@ -25,9 +28,17 @@
   <body>
     <div id="app"></div>
     <script type="module">
-      import { NButton } from 'naive'
+      import { createApp, h, getCurrentInstance } from 'vue'
+      import { NInput } from 'naive'
 
-      console.log(NButton)
+      console.log(NInput)
+
+      createApp({
+        setup() {
+          console.log(getCurrentInstance())
+          return () => h(NInput)
+        },
+      }).mount('#app')
     </script>
   </body>
 </html>

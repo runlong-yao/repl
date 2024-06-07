@@ -6,48 +6,42 @@ import { useStore, File } from '../store'
 import type { Props } from '../Repl.vue'
 import { useVueImportMap } from '../import-map'
 
-const { importMap: builtinImportMap, vueVersion } = useVueImportMap({
-  runtimeDev: import.meta.env.PROD
-    ? undefined
-    : `${location.origin}/src/vue-dev-proxy`,
-  serverRenderer: import.meta.env.PROD
-    ? undefined
-    : `${location.origin}/src/vue-server-renderer-dev-proxy`,
+interface PreviewProps {
+  importMap: Record<string, string>
+  css?: string[]
+  files: Record<string, string>
+  vueVersion?: string
+}
+
+const props = withDefaults(defineProps<PreviewProps>(), {
   vueVersion: '3.4.27',
 })
+
+const { importMap: builtinImportMap, vueVersion } = useVueImportMap()
+watchEffect(() => (vueVersion.value = props.vueVersion))
 
 const theme = ref<'light' | 'dark'>('dark')
 const previewTheme = ref(false)
 const clearConsole = ref(true)
-
 const importMap = computed(() => {
   return {
     imports: {
       ...builtinImportMap.value.imports,
-      'naive-esm': `${location.origin}/node_modules/naive-ui/es/index.mjs`,
+      ...props.importMap,
     },
   }
 })
-
-let code = `<script setup>
-import {NInput} from "naive-esm"
-import {getCurrentInstance} from "vue"
-console.log(getCurrentInstance())
-<\/script>
-
-<template>
-  <NInput>hello</NInput>
-</template>
-`
-
-const file = new File('src/App.vue', code)
 
 const store = useStore({
   vueVersion: vueVersion,
   builtinImportMap: importMap,
 })
 
-store.addFile(file)
+watchEffect(() => {
+  for (let key in props.files) {
+    store.addFile(new File(key, props.files[key]))
+  }
+})
 
 store.init()
 

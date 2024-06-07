@@ -13,7 +13,24 @@ window.process = { env: {} }
 
 const App = {
   setup() {
-    return () => h(PreviewOnly)
+    let mainFile = `
+    <script setup>
+      import {NButton} from "naive"
+    </script>
+    <template>
+      <NButton>按钮</NButton>
+    </template>
+    `
+
+    return () =>
+      h(PreviewOnly, {
+        importMap: {
+          naive: `${location.origin}/naive-esm/naive-esm.js`,
+        },
+        files: {
+          'src/App.vue': mainFile,
+        },
+      })
   },
 }
 
