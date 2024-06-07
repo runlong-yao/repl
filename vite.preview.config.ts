@@ -10,6 +10,10 @@ export default defineConfig({
       },
     }),
   ],
+  optimizeDeps: {
+    // avoid late discovered deps
+    include: ['date-fns'],
+  },
   resolve: {
     alias: {
       '@vue/compiler-dom': '@vue/compiler-dom/dist/compiler-dom.cjs.js',

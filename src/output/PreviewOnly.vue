@@ -24,12 +24,15 @@ const importMap = computed(() => {
   return {
     imports: {
       ...builtinImportMap.value.imports,
-      'naive-esm': `${location.origin}/naive-esm/naive-esm.js`,
+      'naive-esm': `${location.origin}/node_modules/naive-ui/es/index.mjs`,
     },
   }
 })
 
 let code = `<script setup>
+import {NInput} from "naive-esm"
+import {getCurrentInstance} from "vue"
+console.log(getCurrentInstance())
 <\/script>
 
 <template>

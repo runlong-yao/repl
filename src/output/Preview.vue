@@ -250,13 +250,17 @@ async function updatePreview() {
       codeToEval.push(
         `import { ${
           isSSR ? `createSSRApp` : `createApp`
-        } as _createApp } from "vue"
-        import * as Vue from "vue"
+        } as _createApp,h } from "vue"
+        
         ${previewOptions?.customCode?.importCode || ''}
         const _mount = () => {
           const AppComponent = __modules__["${mainFile}"].default
           AppComponent.name = 'Repl'
-          const app = window.__app__ = _createApp(AppComponent)
+          const app = window.__app__ = _createApp({
+            setup(){
+              return ()=>h(AppComponent)
+            }
+          })
           if (!app.config.hasOwnProperty('unwrapInjectedRef')) {
             app.config.unwrapInjectedRef = true
           }
@@ -264,16 +268,7 @@ async function updatePreview() {
           app.config.errorHandler = e => console.error(e)
           ${previewOptions?.customCode?.useCode || ''}
 
-          window.Vue = Vue
-
-          import("https://unpkg.com/naive-ui").then(r=> {
-          // console.log(r)
-          // console.log(window.naive)
-          app.use(window.naive)
           app.mount('#app')
-          })
-
-          // 
         }
         if (window.__ssr_promise__) {
           window.__ssr_promise__.then(_mount)
