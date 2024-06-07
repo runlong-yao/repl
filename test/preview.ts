@@ -27,6 +27,7 @@ const App = {
         importMap: {
           naive: `${location.origin}/naive-esm/naive-esm.js`,
         },
+        css: [`${location.origin}/body.css`],
         files: {
           'src/App.vue': mainFile,
         },

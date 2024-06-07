@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Preview from './Preview.vue'
 import { injectKeyStore } from '../../src/types'
-import { provide, ref, computed, watch, watchEffect } from 'vue'
+import { provide, ref, computed, watchEffect, reactive } from 'vue'
 import { useStore, File } from '../store'
 import type { Props } from '../Repl.vue'
 import { useVueImportMap } from '../import-map'
@@ -23,6 +23,7 @@ watchEffect(() => (vueVersion.value = props.vueVersion))
 const theme = ref<'light' | 'dark'>('dark')
 const previewTheme = ref(false)
 const clearConsole = ref(true)
+const previewOptions = reactive<NonNullable<Props['previewOptions']>>({})
 const importMap = computed(() => {
   return {
     imports: {
@@ -43,15 +44,21 @@ watchEffect(() => {
   }
 })
 
+watchEffect(() => {
+  let headHTML = ''
+  props.css?.forEach(
+    (v) => (headHTML += `<link rel="stylesheet" href="${v}">\n`),
+  )
+  previewOptions.headHTML = headHTML
+})
+
 store.init()
 
 provide(injectKeyStore, store)!
 provide('clear-console', clearConsole)
 provide('theme', theme)
 provide('preview-theme', previewTheme)
-provide('preview-options', {
-  bodyHTML: '',
-} as Props['previewOptions'])
+provide('preview-options', previewOptions)
 </script>
 
 <template>
